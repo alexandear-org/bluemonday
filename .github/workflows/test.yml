@@ -7,24 +7,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go: [1.19.x, 1.x]
+        go: [1.24.x, 1.x]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Install Go ${{ matrix.go }}
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go }}
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
+    - name: Install Go ${{ matrix.go }}
+      uses: actions/setup-go@v6
+      with:
+        go-version: ${{ matrix.go }}
     - name: Vet
       run: go vet ./...
     - name: Staticcheck
       run: |
-        go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install honnef.co/go/tools/cmd/staticcheck@v0.6.1
         staticcheck ./...
     - name: Test
       run: go test -v -race ./...
-
+    - name: Govulncheck
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
